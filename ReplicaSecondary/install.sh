@@ -9,9 +9,7 @@
 ########################
 # Installation
 ########################
-if ! rpm -q mongo-10gen > /dev/null && ! rpm -q mongo-10gen-server > /dev/null
-then
-
+log 'Creating mongodb.repo...'
 cat > /etc/yum.repos.d/mongodb.repo << EOF
 [mongodb]
 name=MongoDB Repository
@@ -20,32 +18,20 @@ gpgcheck=0
 enabled=1
 EOF
 
-    yum install -q -y mongo-10gen mongo-10gen-server
+log 'Installing mongodb...'
+yum install -q -y mongo-10gen mongo-10gen-server
 
-    chkconfig mongod on
-fi
+log 'chkconfig mongod on'
+chkconfig mongod on
 
 ########################
 # Configuration files
 ########################
-cp $BASECONF/etc/hosts /etc/hosts
-cp $BASECONF/etc/mongod.conf /etc/mongod.conf
+log 'Copying configuration files'
+cp $CONFDIR/mongod.conf /etc/mongod.conf
 
 ########################
 # Setup service
 ########################
+log 'Starting services'
 service mongod start
-#if [ $? -ne 0 ]
-#then
-    #exit 1
-#fi
-
-#if [[ `hostname` == "slave-cloud-1" ]]
-#then
-
-#mongo << EOF
-#rs.initiate()
-#rs.add('slave-cloud-3')
-#EOF
-
-#fi
