@@ -3,6 +3,8 @@
 ########################
 # Prepare
 ########################
+cd "$(dirname ${BASH_SOURCE[0]})"
+
 CONFDIR='./etc'
 LOGFILE='./install.log'
 SRV_CNT=$1

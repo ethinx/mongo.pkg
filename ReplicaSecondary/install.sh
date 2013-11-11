@@ -19,7 +19,10 @@ enabled=1
 EOF
 
 log 'Installing mongodb...'
+if ! rpm -q mongo-10gen-server
+then
 yum install -q -y mongo-10gen mongo-10gen-server
+fi
 
 log 'chkconfig mongod on'
 chkconfig mongod on

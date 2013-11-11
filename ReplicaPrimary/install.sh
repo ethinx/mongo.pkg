@@ -19,7 +19,10 @@ enabled=1
 EOF
 
 log 'Installing mongodb...'
+if ! rpm -q mongo-10gen-server
+then
 yum install -q -y mongo-10gen mongo-10gen-server
+fi
 
 log 'chkconfig mongod on'
 chkconfig mongod on
@@ -37,12 +40,31 @@ log 'Starting services'
 service mongod start
 
 log 'Initiate replication'
-mongo << EOF
-rs.initiate()
-EOF
+echo 'rs.initiate()' | mongo
+sleep 1
+res=0
+while [ $res -eq 0 ]
+do
+    res=`echo 'rs.status()' | mongo --quiet | egrep ok | awk '{print $3}'`
+    res=${res/,/}
+    sleep 1
+done
+
+if [ $? -ne 0 ]
+then
+    exit 1
+fi
 
 log 'Adding nodes'
-for i in $*
+for ip in $*
 do
-rs.add("$i")
+    log "Adding node $ip"
+    json=`mongo --quiet --eval "printjson(rs.add('$ip'))"`
+    res=`echo $json | python -c 'import json,sys; print json.load(sys.stdin)["ok"]'`
+    if [ $res -eq 1 ]
+    then
+        log 'Success'
+    else
+        log 'Failed'
+    fi
 done
